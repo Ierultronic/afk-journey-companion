@@ -1,0 +1,33 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "node server.js"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 100
+
+[[cron]]
+name = "sync-heroes"
+command = "curl -s http://localhost:3000/api/cron/sync-heroes"
+schedule = "0 2 * * *"
+
+[[cron]]
+name = "sync-tiers"
+command = "curl -s http://localhost:3000/api/cron/sync-tiers"
+schedule = "0 3 * * *"
+
+[[cron]]
+name = "sync-banners"
+command = "curl -s http://localhost:3000/api/cron/sync-banners"
+schedule = "0 */6 * * *"
+
+[[cron]]
+name = "sync-events"
+command = "curl -s http://localhost:3000/api/cron/sync-events"
+schedule = "0 */6 * * *"
+
+[[cron]]
+name = "sync-patches"
+command = "curl -s http://localhost:3000/api/cron/sync-patches"
+schedule = "0 4 * * *"

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: afk-journey-companion
+    runtime: image
+    repo: https://github.com/YOUR_USER/afk-journey-companion
+    region: singapore
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: CRON_SECRET
+        generateValue: true
+    healthCheckPath: /api/health
+    autoDeploy: true
