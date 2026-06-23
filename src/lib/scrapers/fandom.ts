@@ -20,6 +20,43 @@ function stripWikitext(wt: string): string {
     .trim();
 }
 
+function stripWikitextPreserveStructure(wt: string): string {
+  return wt
+    // remove comments first
+    .replace(/<!--[\s\S]*?-->/g, '')
+    // remove templates {{...}}
+    .replace(/\{\{[\s\S]*?\}\}/g, '')
+    // remove wiki tables {| ... |}
+    .replace(/\{\|[\s\S]*?\|\}/g, '')
+    // remove leftover template param fragments (Enemy|param_delim=,|1= etc.)
+    .replace(/^[A-Za-z]+\|[^\n]*$/gm, '')
+    // convert ==Heading== → \nHeading
+    .replace(/^={2,}\s*(.+?)\s*={2,}\s*$/gm, '\n$1\n')
+    // convert '''bold''' → just text
+    .replace(/'''/g, '')
+    // remove HTML tags (but keep entities like &times; for now)
+    .replace(/<[^>]+>/g, '')
+    // convert wiki links
+    .replace(/\[\[([^|\]]*\|)?([^\]]+)\]\]/g, '$2')
+    // unescape common HTML entities
+    .replace(/&times;/g, '×')
+    .replace(/&ndash;/g, '–')
+    .replace(/&mdash;/g, '—')
+    .replace(/&amp;/g, '&')
+    // remove leading colon (indented text marker)
+    .replace(/^:\s*/gm, '')
+    // convert # item markers → - (but not ## or #*)
+    .replace(/^#(?![#*])\s*/gm, '- ')
+    // collapse 3+ newlines to 2
+    .replace(/\n{3,}/g, '\n\n')
+    // trim each line
+    .split('\n').map(l => l.trim()).join('\n')
+    // remove leading/trailing blank lines
+    .replace(/^\n+/, '')
+    .replace(/\n+$/, '')
+    .trim();
+}
+
 export async function getAllHeroNames(): Promise<string[]> {
   const data = await wikiFetch({
     action: 'query',
@@ -181,7 +218,7 @@ export async function fetchAllEvents() {
     const typeMatch = wt.match(/\|type\s*=\s*(.+)/i);
     events.push({
       name: page.title,
-      description: stripWikitext(wt).slice(0, 500),
+      description: stripWikitextPreserveStructure(wt).slice(0, 2000),
       start_date: startMatch?.[1]?.trim() || null,
       end_date: endMatch?.[1]?.trim() || null,
       event_type: typeMatch?.[1]?.trim() || null,
