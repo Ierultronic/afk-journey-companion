@@ -4,17 +4,16 @@ import TeamSlot from "@/components/TeamSlot";
 export const dynamic = "force-dynamic";
 
 export default async function TeamBuilderPage() {
-  const { data: comps } = await getSupabase().from("team_comps").select("*").order("name");
-  const { data: heroes } = await getSupabase().from("heroes").select("name").order("name");
-  const availableHeroes = heroes?.map(h => h.name) || [];
+  const { data: heroes } = await getSupabase().from("heroes").select("name,faction,class,rarity,icon_url").order("name");
+  const { data: tiers } = await getSupabase().from("tier_ratings").select("*");
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-white">Team Builder</h1>
       <p className="text-sm text-gray-400">
-        Pick heroes to see matching meta team compositions. Filter by game mode.
+        Pick the heroes you own, select a game mode, and get an instant recommended team based on the meta tier list.
       </p>
-      <TeamSlot comps={comps || []} availableHeroes={availableHeroes} />
+      <TeamSlot heroes={heroes || []} tiers={tiers || []} />
     </div>
   );
 }
