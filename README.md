@@ -4,6 +4,8 @@ Personal project — automated hero database, meta tier lists, team builder, ban
 
 > **Disclaimer:** This is a personal hobby project. Not affiliated with Lilith Games, Farlight Games, or any related entities. All game data sourced from public community wikis and guide sites.
 
+🔗 **Live demo:** [afk-journey-companion.onrender.com](https://afk-journey-companion.onrender.com)
+
 ## Stack
 
 - **Next.js 16** (App Router)
