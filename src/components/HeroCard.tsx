@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { FACTION_COLORS } from '@/lib/colors';
 
 interface Props {
   name: string;
@@ -7,16 +8,6 @@ interface Props {
   rarity: string;
   icon_url?: string | null;
 }
-
-const factionColors: Record<string, string> = {
-  Lightbearer: 'bg-yellow-600',
-  Mauler: 'bg-red-700',
-  Wilder: 'bg-green-700',
-  Graveborn: 'bg-purple-800',
-  Celestial: 'bg-blue-600',
-  Hypogean: 'bg-pink-700',
-  Dimensional: 'bg-cyan-700',
-};
 
 export default function HeroCard({ name, faction, class: cls, rarity, icon_url }: Props) {
   return (
@@ -28,7 +19,7 @@ export default function HeroCard({ name, faction, class: cls, rarity, icon_url }
         {icon_url ? (
           <img src={icon_url} alt={name} className="w-10 h-10 rounded-full object-cover" />
         ) : (
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${factionColors[faction] || 'bg-gray-600'}`}>
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${FACTION_COLORS[faction] || 'bg-gray-600'}`}>
             {name[0]}
           </div>
         )}

@@ -172,15 +172,28 @@ export default function PatchNotesClient({ patches }: { patches: Patch[] }) {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <div className="text-center py-6">
-        <h1 className="text-3xl font-bold text-white">Patch Notes</h1>
-        <p className="text-sm text-gray-400 mt-2">{patches.length} versions tracked</p>
+      <div className="flex items-center justify-between py-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Patch Notes</h1>
+          <p className="text-sm text-gray-400 mt-2">{patches.length} versions tracked</p>
+        </div>
+        <button
+          onClick={() => {
+            const allExpanded = patches.every(p => expanded[p.id] ?? false);
+            const next: Record<number, boolean> = {};
+            for (const p of patches) next[p.id] = !allExpanded;
+            setExpanded(next);
+          }}
+          className="text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-3 py-1.5 rounded transition-colors"
+        >
+          {patches.every(p => expanded[p.id] ?? false) ? 'Collapse all' : 'Expand all'}
+        </button>
       </div>
 
       <div className="space-y-4">
         {patches.length === 0 && (
           <div className="text-center py-12 text-gray-500">
-            <p className="text-sm">No patch notes yet.</p>
+            <p className="text-sm">No patch notes synced yet. Check back after the next data sync.</p>
           </div>
         )}
 

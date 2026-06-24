@@ -1,5 +1,7 @@
 import { getSupabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import { FACTION_BG_LIGHT } from "@/lib/colors";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +13,15 @@ export default async function HeroDetailPage({ params }: { params: Promise<{ id:
 
   const { data: skills } = await getSupabase().from("hero_skills").select("*").eq("hero_id", hero.id).order("unlock_level");
 
+  const badge = (label: string, cls = "bg-gray-700 text-gray-200") =>
+    <span className={`text-xs px-2 py-1 rounded border ${cls}`}>{label}</span>;
+
   return (
     <div className="max-w-2xl space-y-6">
+      <Link href="/heroes" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors">
+        ← Back to heroes
+      </Link>
+
       <div className="flex items-start gap-6">
         {hero.icon_url && (
           <img src={hero.icon_url} alt={hero.name} className="w-24 h-24 rounded-xl object-cover shrink-0" />
@@ -20,15 +29,11 @@ export default async function HeroDetailPage({ params }: { params: Promise<{ id:
         <div>
           <h1 className="text-3xl font-bold text-white">{hero.name}</h1>
           <div className="flex gap-2 mt-2 flex-wrap">
-            <span className="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">{hero.rarity}</span>
-            <span className="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">{hero.class}</span>
-            <span className="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">{hero.faction}</span>
-            {hero.damage_type && (
-              <span className="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">{hero.damage_type}</span>
-            )}
-            {hero.range && (
-              <span className="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">Range {hero.range}</span>
-            )}
+            {badge(hero.rarity)}
+            {badge(hero.class)}
+            {badge(hero.faction, FACTION_BG_LIGHT[hero.faction] || 'bg-gray-700 text-gray-200 border-gray-600')}
+            {hero.damage_type && badge(hero.damage_type)}
+            {hero.range && badge(`Range ${hero.range}`)}
           </div>
         </div>
       </div>

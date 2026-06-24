@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { FACTION_COLORS } from '@/lib/colors';
 
 interface Hero {
   name: string;
@@ -30,16 +31,6 @@ const MODE_LABELS: Record<string, string> = {
   pvp: 'PvP',
 };
 
-const FACTION_COLORS: Record<string, string> = {
-  Lightbearer: 'bg-yellow-600',
-  Mauler: 'bg-red-700',
-  Wilder: 'bg-green-700',
-  Graveborn: 'bg-purple-800',
-  Celestial: 'bg-blue-600',
-  Hypogean: 'bg-pink-700',
-  Dimensional: 'bg-cyan-700',
-};
-
 const TIER_COLORS: Record<string, string> = {
   S: 'bg-orange-500 text-white',
   A: 'bg-green-600 text-white',
@@ -51,12 +42,24 @@ function tierScore(t: string) {
   return TIER_ORDER[t.toUpperCase()] ?? 99;
 }
 
+function HeroAvatar({ hero, size = 'w-5 h-5' }: { hero: Hero; size?: string }) {
+  return hero.icon_url
+    ? <img src={hero.icon_url} alt="" className={`${size} rounded-full object-cover shrink-0`} />
+    : <span className={`${size} rounded-full shrink-0 flex items-center justify-center text-white text-[9px] font-bold ${FACTION_COLORS[hero.faction] || 'bg-gray-600'}`}>{hero.name[0]}</span>;
+}
+
+function MinusIcon() {
+  return (
+    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+    </svg>
+  );
+}
+
 export default function TeamSlot({ heroes, tiers }: Props) {
   const [selectedMode, setSelectedMode] = useState('dream_realm');
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
-
-  const heroSet = useMemo(() => new Set(heroes.map(h => h.name)), [heroes]);
 
   const tierByHero = useMemo(() => {
     const map: Record<string, string> = {};
@@ -81,19 +84,14 @@ export default function TeamSlot({ heroes, tiers }: Props) {
   const recommended = pickedSorted.slice(0, 5);
   const bench = pickedSorted.slice(5);
 
-  const missingS = useMemo(() => {
-    const ownedSet = picked;
-    return heroes
-      .filter(h => !ownedSet.has(h.name) && tierByHero[h.name] === 'S')
-      .slice(0, 10);
-  }, [heroes, picked, tierByHero]);
-
-  const missingA = useMemo(() => {
-    const ownedSet = picked;
-    return heroes
-      .filter(h => !ownedSet.has(h.name) && tierByHero[h.name] === 'A')
-      .slice(0, 10);
-  }, [heroes, picked, tierByHero]);
+  const missingS = useMemo(
+    () => heroes.filter(h => !picked.has(h.name) && tierByHero[h.name] === 'S').slice(0, 10),
+    [heroes, picked, tierByHero]
+  );
+  const missingA = useMemo(
+    () => heroes.filter(h => !picked.has(h.name) && tierByHero[h.name] === 'A').slice(0, 10),
+    [heroes, picked, tierByHero]
+  );
 
   const toggleHero = (name: string) => {
     setPicked(prev => {
@@ -133,13 +131,14 @@ export default function TeamSlot({ heroes, tiers }: Props) {
             {pickedSorted.map(h => (
               <span
                 key={h.name}
-                className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded cursor-pointer transition-colors ${
+                className={`inline-flex items-center gap-1.5 text-xs pl-1.5 pr-1 py-1 rounded cursor-pointer transition-colors ${
                   tierByHero[h.name] ? TIER_COLORS[tierByHero[h.name]] : 'bg-gray-700 text-gray-200'
                 }`}
                 onClick={() => toggleHero(h.name)}
               >
-                {tierByHero[h.name] && <span className="font-bold">{tierByHero[h.name]}</span>}
-                {h.name}
+                <HeroAvatar hero={h} />
+                <span>{tierByHero[h.name] && <span className="font-bold mr-0.5">{tierByHero[h.name]}</span>}{h.name}</span>
+                <span className="opacity-50 hover:opacity-100 transition-opacity"><MinusIcon /></span>
               </span>
             ))}
           </div>
@@ -165,11 +164,11 @@ export default function TeamSlot({ heroes, tiers }: Props) {
                 : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-indigo-500'
             }`}
           >
-            {tierByHero[h.name] && (
-              <span className={`w-4 h-4 rounded text-[9px] font-bold flex items-center justify-center ${TIER_COLORS[tierByHero[h.name]]}`}>
+            <span className={picked.has(h.name) ? 'opacity-50' : ''}>{tierByHero[h.name] && (
+              <span className={`w-4 h-4 rounded text-[9px] font-bold inline-flex items-center justify-center ${TIER_COLORS[tierByHero[h.name]]}`}>
                 {tierByHero[h.name]}
               </span>
-            )}
+            )}</span>
             {h.name}
           </button>
         ))}
@@ -185,9 +184,7 @@ export default function TeamSlot({ heroes, tiers }: Props) {
             {recommended.map((h, i) => (
               <div key={h.name} className="flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 min-w-0">
                 <span className="text-xs text-gray-500 font-mono w-4">#{i + 1}</span>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${FACTION_COLORS[h.faction] || 'bg-gray-600'}`}>
-                  {h.icon_url ? <img src={h.icon_url} alt="" className="w-7 h-7 rounded-full object-cover" /> : h.name[0]}
-                </div>
+                <HeroAvatar hero={h} size="w-7 h-7" />
                 <div className="min-w-0">
                   <div className="text-white text-xs font-medium leading-tight truncate max-w-[120px]">{h.name}</div>
                   <div className="text-[10px] text-gray-500">{h.class} · {h.faction}</div>
@@ -250,7 +247,7 @@ export default function TeamSlot({ heroes, tiers }: Props) {
       )}
 
       {tiers.length === 0 && (
-        <p className="text-gray-500 text-sm">No tier data available. Sync via cron to enable recommendations.</p>
+        <p className="text-gray-500 text-sm">No tier data synced yet. Check back after the next data sync.</p>
       )}
     </div>
   );

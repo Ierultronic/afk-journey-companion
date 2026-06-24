@@ -9,8 +9,14 @@ export default async function BannersPage() {
     .select("*")
     .order("start_date", { ascending: false });
 
+  const { data: heroes } = await getSupabase().from("heroes").select("name,faction,icon_url");
+  const heroInfo: Record<string, { faction: string; icon_url: string | null }> = {};
+  for (const h of heroes || []) heroInfo[h.name] = { faction: h.faction, icon_url: h.icon_url };
+
   const active = banners?.filter(b => b.is_active) || [];
   const past = banners?.filter(b => !b.is_active) || [];
+
+  const enrich = (b: any) => ({ ...b, ...heroInfo[b.hero_name] || { faction: '', icon_url: null } });
 
   return (
     <div className="space-y-8">
@@ -20,7 +26,7 @@ export default async function BannersPage() {
         <div>
           <h2 className="text-lg font-semibold text-white mb-3">Active Banners</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {active.map(b => <BannerCard key={b.id} {...b} />)}
+            {active.map(b => <BannerCard key={b.id} {...enrich(b)} />)}
           </div>
         </div>
       )}
@@ -29,13 +35,13 @@ export default async function BannersPage() {
         <div>
           <h2 className="text-lg font-semibold text-white mb-3">Past Banners</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {past.slice(0, 20).map(b => <BannerCard key={b.id} {...b} />)}
+            {past.slice(0, 20).map(b => <BannerCard key={b.id} {...enrich(b)} />)}
           </div>
         </div>
       )}
 
       {(!banners || banners.length === 0) && (
-        <p className="text-gray-500">No banner data yet. Run the sync-banners cron job.</p>
+        <p className="text-gray-500">No banners synced yet. Check back after the next data sync.</p>
       )}
     </div>
   );
